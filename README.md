@@ -6,10 +6,10 @@ Edit the config.py script and fill in the proper values. Install the dependencie
 
 ## Dependencies
 This bot relies on:
--python 3.7
--discord.py
--python-dateutil
--aiofiles
--jishaku
+- python 3.7
+- discord.py
+- python-dateutil
+- aiofiles
+- jishaku
 
 Install these before you can run the bot (except jishaku which is optional if you turn it off in the config).
