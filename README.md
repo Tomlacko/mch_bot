@@ -1,4 +1,4 @@
-# mchbot
+# mch_bot
 A custom discord.py based Discord bot for the Minecraft@Home Discord server.
 
 # setup
