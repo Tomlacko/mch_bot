@@ -31,8 +31,8 @@ class TestCommands(commands.Cog):
         if text:
             await ctx.send(text)
 
-    @commands.command(name="level")
     @commands.guild_only()
+    @commands.command(name="level")
     async def showPermLevel(self, ctx: commands.Context, member: discord.Member = None):
         """Tells you what your (or others') permission level is from the bot's POV"""
         if not member:
@@ -41,7 +41,10 @@ class TestCommands(commands.Cog):
             await ctx.reply(f"The permission level of {member.mention} is {self.bot.permhelper.getUserPermLevel(member)}", mention_author=False, allowed_mentions=discord.AllowedMentions.none())
     @showPermLevel.error
     async def showPermLevelError(self, ctx: commands.Context, error: commands.CommandError):
-        await ctx.reply("Command failed.\nEnter a member as an argument to check their level, or don't provide any to check yours.", mention_author=False)
+        if isinstance(error, commands.NoPrivateMessage):
+            await ctx.reply("This command can only be run in a server.", mention_author=False)
+        else:
+            await ctx.reply("Command failed.\nUsage: Enter a member as an argument to check their level, or don't provide any to check yours.", mention_author=False)
 
 
     @commands.command(name="cogs")

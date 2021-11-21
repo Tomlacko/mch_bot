@@ -31,8 +31,8 @@ class Muteme(commands.Cog):
                 member = guild.get_member(int(user_id))
                 asyncio.create_task(self.unmuteAt(member, end_timestamp))
 
-    @commands.command(name="muteme")
     @commands.guild_only()
+    @commands.command(name="muteme")
     async def muteme(self, ctx: commands.Context, duration: TimeDurationSeconds = 60):
         """Mutes the user for the given duration of time."""
         
@@ -57,7 +57,9 @@ class Muteme(commands.Cog):
     
     @muteme.error
     async def mutemeError(self, ctx: commands.Context, error: commands.CommandError):
-        if isinstance(error, commands.BadArgument) or isinstance(error, commands.ConversionError):
+        if isinstance(error, commands.NoPrivateMessage):
+            await ctx.reply("This command can only be run in a server.", mention_author=False)
+        elif isinstance(error, commands.BadArgument) or isinstance(error, commands.ConversionError):
             await ctx.reply(f"Command failed - bad formatting.\nUse `{self.bot.config.bot_prefix}muteme [duration (default=1m, min=1s, max=24h)]`, where `duration` has format `yMwdhms`\nExample: `2h15s`.", mention_author=False)
         else:
             await ctx.reply("Command failed.", mention_author=False)
