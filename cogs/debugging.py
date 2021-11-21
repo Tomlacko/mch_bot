@@ -2,7 +2,6 @@ import discord
 from discord.ext import commands
 
 
-from utils.simpledb import SimpleDB
 
 
 class Debugging(commands.Cog):
@@ -14,18 +13,17 @@ class Debugging(commands.Cog):
 
     @commands.command(name="test")
     @commands.is_owner()
-    async def test(self, ctx: commands.Context, *, text: str = ""):
+    async def test(self, ctx: commands.Context):
         """Test some code..."""
+        #-------------
 
-
-        db = SimpleDB(self.bot.globaldata["dbdir"], "muteme")
-        data = await db.getData()
-        
-        print(data)
-        data["key"] = 123
-        print(data)
-
-        await db.saveData(data)
+        if ctx.message.attachment_count > 0:
+            att = ctx.message.attachments[0]
+            print(att.content_type)
+            print(att.url)
+            #att.to_file()
+        else:
+            print("no attachments")
 
 
         #-------------

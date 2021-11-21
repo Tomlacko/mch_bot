@@ -5,6 +5,8 @@ from os import path
 
 import config
 
+from utils.permissions import PermissionHelper
+
 
 
 intents = discord.Intents.default()
@@ -27,6 +29,7 @@ bot = commands.Bot(
 )
 
 bot.config = config
+bot.permhelper = PermissionHelper(bot.config.permission_levels)
 bot.globaldata = {}
 bot.globaldata["status"] = {
     "cogs_total":0,
@@ -35,7 +38,6 @@ bot.globaldata["status"] = {
     "cogs_disabled":0,
     "coglist":{}
 }
-
 bot.globaldata["cwd"] = path.dirname(__file__)
 bot.globaldata["dbdir"] = path.join(bot.globaldata["cwd"], bot.config.database_dir)
 
@@ -84,14 +86,14 @@ def load_cogs(dir: str):
             botdata["coglist"][ext_name] = "Disabled"
             print(f"- Skipping {ext_name}...")
     
-    print(f"Done, loaded {botdata['cogs_loaded']}/{botdata['cogs_total']} cogs. ({botdata['cogs_failed']} failed, {botdata['cogs_disabled']} skipped)\n")
+    print(f"Cog loading done, loaded {botdata['cogs_loaded']}/{botdata['cogs_total']} cogs. ({botdata['cogs_failed']} failed, {botdata['cogs_disabled']} skipped)\n")
 
     if botdata["cogs_failed"] > 0:
         if input("Some cogs failed to load. Load bot regardless? (y): ")!="y":
             print("Quitting...")
             exit()
 
-load_cogs(config.cogs_dir)
+load_cogs(bot.config.cogs_dir)
 
 
 @bot.event
@@ -106,4 +108,4 @@ async def on_ready():
     
 
 
-bot.run(config.TOKEN)
+bot.run(bot.config.TOKEN)

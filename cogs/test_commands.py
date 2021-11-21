@@ -15,7 +15,7 @@ class TestCommands(commands.Cog):
     async def ping(self, ctx: commands.Context):
         """Test the response time."""
         start_time = time.time()
-        message:discord.Message = await ctx.send("Measuring ping...")
+        message = await ctx.reply("Measuring ping...", mention_author=False)
         end_time = time.time()
 
         api_latency = round((end_time - start_time)*1000)/1000
@@ -30,6 +30,17 @@ class TestCommands(commands.Cog):
         text = text.strip()
         if text:
             await ctx.send(text)
+
+    @commands.command(name="level")
+    async def showPermLevel(self, ctx: commands.Context, member: discord.Member = None):
+        """Tells you what your (or others') permission level is from the bot's POV"""
+        if not member:
+            await ctx.reply(f"Your permission level is {self.bot.permhelper.getUserPermLevel(ctx.author)}", mention_author=False)
+        else:
+            await ctx.reply(f"The permission level of {member.mention} is {self.bot.permhelper.getUserPermLevel(member)}", mention_author=False, allowed_mentions=discord.AllowedMentions.none())
+    @showPermLevel.error
+    async def showPermLevelError(self, ctx: commands.Context, error: commands.CommandError):
+        await ctx.reply("Command failed.\nEnter a member as an argument to check their level, or don't provide any to check yours.", mention_author=False)
 
 
     @commands.command(name="cogs")
@@ -54,7 +65,7 @@ __**List of cogs:**__
             text += cogname.ljust(25, " ") + " - " + cogstatus + "\n"
         
         text += "```"
-        await ctx.send(text)
+        await ctx.reply(text, mention_author=False)
 
 
 

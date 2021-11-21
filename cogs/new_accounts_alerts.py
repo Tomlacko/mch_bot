@@ -29,7 +29,7 @@ class NewAccountsAlerts(commands.Cog):
             h = (acc_age // 3600) % 24
             d = (acc_age // 86400) % 7
 
-            await channel.send(f"NEW USER: {member.mention} ({member.id}) was created in the last week! ({d}d {h}h {m}m {s}s ago)", allowed_mentions=discord.AllowedMentions(users=False))
+            await channel.send(f"NEW USER: {member.mention} ({member.id}) was created in the last week! ({d}d {h}h {m}m {s}s ago)")#, allowed_mentions=discord.AllowedMentions.none()) #must ping, otherwise doesn't show usernames
         
 
 
