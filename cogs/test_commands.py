@@ -32,6 +32,7 @@ class TestCommands(commands.Cog):
             await ctx.send(text)
 
     @commands.command(name="level")
+    @commands.guild_only()
     async def showPermLevel(self, ctx: commands.Context, member: discord.Member = None):
         """Tells you what your (or others') permission level is from the bot's POV"""
         if not member:
