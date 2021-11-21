@@ -38,10 +38,10 @@ class MathStuff(commands.Cog):
     @commands.command(name="randomint", aliases=["randomnum"])
     async def randomInt(self, ctx: commands.Context, start: int = None, stop: int = None):
         """Chooses a random whole number from a range (inclusive)"""
-        if not start:
+        if start is None:
             start = 0
             stop = 1
-        elif not stop:
+        elif stop is None:
             stop = start
             start = 0
         if start>stop:
@@ -56,10 +56,10 @@ class MathStuff(commands.Cog):
     @commands.command(name="randomfloat")
     async def randomFloat(self, ctx: commands.Context, start: float = None, stop: float = None):
         """Chooses a random floating-point number from a range (inclusive)"""
-        if not start:
+        if start is None:
             start = 0.0
             stop = 1.0
-        elif not stop:
+        elif stop is None:
             stop = start
             start = 0.0
         if start>stop:
