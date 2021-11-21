@@ -9,6 +9,13 @@ class TestCommands(commands.Cog):
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+    
+
+    @commands.Cog.listener()
+    async def on_message(self, message: discord.Message):
+        #log DMs
+        if not message.guild:
+            print(f"\nDM from {message.author} ({message.author.id}): {message.content}")
 
 
     @commands.command(name="ping")
