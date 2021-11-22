@@ -1,7 +1,7 @@
+import time
+
 import discord
 from discord.ext import commands
-
-import time
 
 
 class TestCommands(commands.Cog):
@@ -9,14 +9,14 @@ class TestCommands(commands.Cog):
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-    
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
-        #log DMs
+        # log DMs
         if not message.guild:
-            print(f"\nDM from {message.author} ({message.author.id}): {message.content}")
-
+            print(
+                f"\nDM from {message.author} ({message.author.id}): {message.content}"
+            )
 
     @commands.command(name="ping")
     async def ping(self, ctx: commands.Context):
@@ -25,11 +25,12 @@ class TestCommands(commands.Cog):
         message = await ctx.reply("Measuring ping...", mention_author=False)
         end_time = time.time()
 
-        api_latency = round((end_time - start_time)*1000)/1000
-        websocket_latency = round(self.bot.latency*1000)/1000
+        api_latency = round((end_time - start_time) * 1000) / 1000
+        websocket_latency = round(self.bot.latency * 1000) / 1000
 
-        await message.edit(content=f"Pong!\nWebsocket latency: {websocket_latency}s\nAPI latency: {api_latency}s")
-
+        await message.edit(
+            content=f"Pong!\nWebsocket latency: {websocket_latency}s\nAPI latency: {api_latency}s"
+        )
 
     @commands.command(name="say")
     async def say(self, ctx: commands.Context, *, text: str = ""):
@@ -43,16 +44,30 @@ class TestCommands(commands.Cog):
     async def showPermLevel(self, ctx: commands.Context, member: discord.Member = None):
         """Tells you what your (or others') permission level is from the bot's POV"""
         if not member:
-            await ctx.reply(f"Your permission level is {self.bot.permhelper.getUserPermLevel(ctx.author)}", mention_author=False)
+            await ctx.reply(
+                f"Your permission level is {self.bot.permhelper.getUserPermLevel(ctx.author)}",
+                mention_author=False,
+            )
         else:
-            await ctx.reply(f"The permission level of {member.mention} is {self.bot.permhelper.getUserPermLevel(member)}", mention_author=False, allowed_mentions=discord.AllowedMentions.none())
-    @showPermLevel.error
-    async def showPermLevelError(self, ctx: commands.Context, error: commands.CommandError):
-        if isinstance(error, commands.NoPrivateMessage):
-            await ctx.reply("This command can only be run in a server.", mention_author=False)
-        else:
-            await ctx.reply("Command failed.\nUsage: Enter a member as an argument to check their level, or don't provide any to check yours.", mention_author=False)
+            await ctx.reply(
+                f"The permission level of {member.mention} is {self.bot.permhelper.getUserPermLevel(member)}",
+                mention_author=False,
+                allowed_mentions=discord.AllowedMentions.none(),
+            )
 
+    @showPermLevel.error
+    async def showPermLevelError(
+        self, ctx: commands.Context, error: commands.CommandError
+    ):
+        if isinstance(error, commands.NoPrivateMessage):
+            await ctx.reply(
+                "This command can only be run in a server.", mention_author=False
+            )
+        else:
+            await ctx.reply(
+                "Command failed.\nUsage: Enter a member as an argument to check their level, or don't provide any to check yours.",
+                mention_author=False,
+            )
 
     @commands.command(name="cogs")
     async def listCogStatus(self, ctx: commands.Context):
@@ -74,13 +89,9 @@ __**List of cogs:**__
 
         for cogname, cogstatus in botdata["coglist"].items():
             text += cogname.ljust(25, " ") + " - " + cogstatus + "\n"
-        
+
         text += "```"
         await ctx.reply(text, mention_author=False)
-
-
-
-
 
 
 def setup(bot: commands.Bot):

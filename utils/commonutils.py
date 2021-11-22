@@ -1,7 +1,9 @@
-NEW_LINE = '\n' #used in f-strings
+NEW_LINE = "\n"  # used in f-strings
+
 
 def snowflakeToTime(snowflake: int) -> int:
-    return snowflake//4194304000 + 1420070400
+    return snowflake // 4194304000 + 1420070400
+
 
 def tryOrDefault(func, defaultVal=None):
     try:
@@ -10,7 +12,8 @@ def tryOrDefault(func, defaultVal=None):
         pass
     return defaultVal
 
+
 def pluralSuffix(val: int) -> str:
-    if val!=1:
+    if val != 1:
         return "s"
     return ""

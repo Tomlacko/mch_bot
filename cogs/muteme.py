@@ -1,17 +1,16 @@
+import asyncio
+from time import time
+
 import discord
 from discord.ext import commands
-import asyncio
+
+import config
+from utils.simpledb import SimpleDB
 
 # pylint: disable=import-error
 from utils.time_duration_converter import TimeDurationSeconds
-from time import time
 
-from utils.simpledb import SimpleDB
-
-import config
-
-
-muteme_max_limit = 24*60*60 #1 day
+muteme_max_limit = 24 * 60 * 60  # 1 day
 
 
 class Muteme(commands.Cog):
@@ -20,7 +19,7 @@ class Muteme(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.mutesdb = SimpleDB(self.bot.globaldata["dbdir"], "muteme")
-    
+
     @commands.Cog.listener()
     async def on_ready(self):
         """Reload active mutes."""
@@ -35,12 +34,14 @@ class Muteme(commands.Cog):
     @commands.command(name="muteme")
     async def muteme(self, ctx: commands.Context, duration: TimeDurationSeconds = 60):
         """Mutes the user for the given duration of time."""
-        
+
         author = ctx.message.author
         muted_role = discord.utils.get(ctx.guild.roles, id=config.muted_role_id)
-        
+
         if muted_role in author.roles:
-            await ctx.reply("Shut, you are already supposed to be muted 🗿", mention_author=False)
+            await ctx.reply(
+                "Shut, you are already supposed to be muted 🗿", mention_author=False
+            )
         else:
             duration = max(min(muteme_max_limit, duration), 1)
             end_timestamp = round(time()) + duration
@@ -50,23 +51,35 @@ class Muteme(commands.Cog):
             g[str(author.id)] = end_timestamp
             await self.mutesdb.saveData(data)
 
-            await author.add_roles(muted_role, reason="Used the muteme command.", atomic=True)
-            await ctx.reply(f"Muted <@{author.id}> for {duration} seconds. 🗿\n*You will be unmuted <t:{end_timestamp}:R> (<t:{end_timestamp}:F>).*", mention_author=False)
-            
+            await author.add_roles(
+                muted_role, reason="Used the muteme command.", atomic=True
+            )
+            await ctx.reply(
+                f"Muted <@{author.id}> for {duration} seconds. 🗿\n*You will be unmuted <t:{end_timestamp}:R> (<t:{end_timestamp}:F>).*",
+                mention_author=False,
+            )
+
             await self.unmuteAt(author, end_timestamp)
-    
+
     @muteme.error
     async def mutemeError(self, ctx: commands.Context, error: commands.CommandError):
         if isinstance(error, commands.NoPrivateMessage):
-            await ctx.reply("This command can only be run in a server.", mention_author=False)
-        elif isinstance(error, commands.BadArgument) or isinstance(error, commands.ConversionError):
-            await ctx.reply(f"Command failed - bad formatting.\nUse `{self.bot.config.bot_prefix}muteme [duration (default=1m, min=1s, max=24h)]`, where `duration` has format `yMwdhms`\nExample: `2h15s`.", mention_author=False)
+            await ctx.reply(
+                "This command can only be run in a server.", mention_author=False
+            )
+        elif isinstance(error, commands.BadArgument) or isinstance(
+            error, commands.ConversionError
+        ):
+            await ctx.reply(
+                f"Command failed - bad formatting.\nUse `{self.bot.config.bot_prefix}muteme [duration (default=1m, min=1s, max=24h)]`, where `duration` has format `yMwdhms`\nExample: `2h15s`.",
+                mention_author=False,
+            )
         else:
             await ctx.reply("Command failed.", mention_author=False)
 
     async def unmuteAt(self, member: discord.Member, end_timestamp):
         duration = end_timestamp - round(time())
-        if duration>0:
+        if duration > 0:
             await asyncio.sleep(duration)
         await self.unmute(member)
 
@@ -77,7 +90,6 @@ class Muteme(commands.Cog):
 
         muted_role = discord.utils.get(member.guild.roles, id=config.muted_role_id)
         await member.remove_roles(muted_role, reason="muteme expired.", atomic=True)
-    
 
 
 def setup(bot: commands.Bot):

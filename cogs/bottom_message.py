@@ -1,7 +1,8 @@
-import discord
-from discord.ext import commands
 import asyncio
 from time import time
+
+import discord
+from discord.ext import commands
 
 messageText = """
 __**Here you can propose new projects!**__
@@ -18,21 +19,20 @@ Otherwise you'll get notified in <#738860957685776395> if there are any problems
 Repeatedly making bad suggestions will get your access to this channel removed!*
 """
 
-channelID = 738836486199181312 #project-suggestions
+channelID = 738836486199181312  # project-suggestions
 
-remove_reactions_duration = 5*60 #seconds
-
+remove_reactions_duration = 5 * 60  # seconds
 
 
 class BottomMessage(commands.Cog):
     """To keep a message posted at the bottom of a channel."""
-    #code adopted from vco's research bot
+
+    # code adopted from vco's research bot
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.started = False
         self.message = None
-
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -49,14 +49,13 @@ class BottomMessage(commands.Cog):
             i += 1
 
         if success:
-            if i>0:
-                #delete the old message and send a new one
+            if i > 0:
+                # delete the old message and send a new one
                 await self.message.delete()
                 self.message = await channel.send(messageText)
         else:
-            #just send a new one
+            # just send a new one
             self.message = await channel.send(messageText)
-
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
@@ -72,15 +71,17 @@ class BottomMessage(commands.Cog):
 
         check = lambda r, u: r.message == self.message
         stopRemovingReactionsTime = time() + remove_reactions_duration
-        
+
         while time() < stopRemovingReactionsTime:
             try:
-                reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=stopRemovingReactionsTime-time()+1)
+                reaction, user = await self.bot.wait_for(
+                    "reaction_add",
+                    check=check,
+                    timeout=stopRemovingReactionsTime - time() + 1,
+                )
             except asyncio.TimeoutError:
                 pass
             await self.message.clear_reactions()
-        
-
 
 
 def setup(bot: commands.Bot):

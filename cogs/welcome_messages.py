@@ -1,8 +1,7 @@
 import discord
 from discord.ext import commands
 
-
-welcome_channel = 824296321036582923 #bot-fun (797053871146926130 = newcomers)
+welcome_channel = 824296321036582923  # bot-fun (797053871146926130 = newcomers)
 
 
 class WelcomeMessages(commands.Cog):
@@ -10,7 +9,7 @@ class WelcomeMessages(commands.Cog):
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-    
+
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
         channel = self.bot.get_channel(welcome_channel)
@@ -18,9 +17,11 @@ class WelcomeMessages(commands.Cog):
         if not channel:
             print("welcome channel not found")
             return
-        
-        await channel.send(f"Member {member.mention} joined", allowed_mentions=discord.AllowedMentions(users=False))
 
+        await channel.send(
+            f"Member {member.mention} joined",
+            allowed_mentions=discord.AllowedMentions(users=False),
+        )
 
 
 def setup(bot: commands.Bot):
