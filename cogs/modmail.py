@@ -13,7 +13,7 @@ class Modmail(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, msg: discord.Message):
         #log DMs
-        if not msg.guild:
+        if not msg.guild and not msg.content.startswith(self.bot.config.bot_prefix):
             relayChannel = self.activeDMs.get(msg.author.id, None)
             if relayChannel:
                 await relayChannel.send(
@@ -50,6 +50,35 @@ class Modmail(commands.Cog):
     @dmCommand.error
     async def dmCommandError(self, ctx: commands.Context, error: commands.CommandError):
         await ctx.reply(f"Command failed.\n`{error}`", mention_author=False)
+    
+
+    @commands.command(name="closedm")
+    async def closeDm(self, ctx: commands.Context, user: discord.User = None):
+        """Closes the DM link."""
+
+        ranInDms = not isinstance(ctx.channel, discord.TextChannel)
+
+        if not user:
+            if ranInDms:
+                linkedChannel = self.activeDMs.pop(ctx.author.id, None)
+                if not linkedChannel:
+                    await ctx.reply(f"Command failed - no active DMs to close.", mention_author=False)
+                else:
+                    await linkedChannel.send(f"__{ctx.author.mention} closed the DM.__", allowed_mentions=discord.AllowedMentions.none())
+                    await ctx.reply(f"The active DM was closed.", mention_author=False)
+            else:
+                await ctx.reply(f"Command failed - no user was specified.", mention_author=False)
+        else:
+            linkedChannel = self.activeDMs.pop(user.id, None)
+            if not linkedChannel:
+                await ctx.reply(f"Command failed - no active DMs to close with that user.", mention_author=False)
+            else:
+                await ctx.reply(f"DMs with {user.mention} have now been closed.", mention_author=False, allowed_mentions=discord.AllowedMentions.none())
+                await user.send("*The moderators have now closed this DM.*")
+    @closeDm.error
+    async def closeDmError(self, ctx: commands.Context, error: commands.CommandError):
+        await ctx.reply(f"Command failed.\n`{error}`", mention_author=False)
+
         
         
 
