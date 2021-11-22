@@ -1,8 +1,8 @@
-TOKEN = "YOUR_TOKEN_HERE"
+TOKEN = "PUT_YOUR_TOKEN_HERE"
 
 bot_prefix = "mch!"
-bot_status_type = 0 #unknown = -1, playing = 0, streaming = 1, listening = 2, watching = 3, custom = 4, competing = 5
-bot_status_message = "with commands"
+bot_status_type = 2 #unknown = -1, playing = 0, streaming = 1, listening = 2, watching = 3, custom = 4, competing = 5
+bot_status_message = f"{bot_prefix} prefix"
 
 bot_owner_id = 263862604915539969 #Tomlacko, can use Application owners if set to None
 

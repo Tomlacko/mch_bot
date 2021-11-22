@@ -11,7 +11,7 @@ class Debugging(commands.Cog):
         self.bot = bot
 
 
-    @commands.command(name="test")
+    @commands.command(name="test", hidden=True)
     @commands.is_owner()
     async def test(self, ctx: commands.Context):
         """Test some code..."""
@@ -35,6 +35,10 @@ class Debugging(commands.Cog):
         print("Debugging failed! Error:")
         print(error)
         await ctx.message.add_reaction("❌")
+    
+    #@commands.command(name="joke", hidden=True)
+    async def jokeCommand(self, ctx: commands.Context):
+        pass
 
 def setup(bot: commands.Bot):
     bot.add_cog(Debugging(bot))

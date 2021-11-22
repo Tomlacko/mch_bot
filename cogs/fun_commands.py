@@ -37,10 +37,7 @@ class FunCommands(commands.Cog):
     @spamping.error
     async def spampingError(self, ctx: commands.Context, error: commands.CommandError):
         await ctx.reply(f"Command failed.\nUse `{self.bot.config.bot_prefix}spamping <user> [amount (default=3, min=1, max=5)] [delay (default=2, min=1, max=5)]`.", mention_author=False)
-
-
-
-
+    
 
 
 def setup(bot: commands.Bot):

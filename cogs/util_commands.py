@@ -66,9 +66,6 @@ class UtilCommands(commands.Cog):
     @commands.command(name="msgsource")
     async def msgSource(self, ctx: commands.Context, msg: discord.Message = None):
         """Replies with the raw contents of a message uploaded in a file."""
-        if not self.bot.permhelper.isUserAbove(ctx.author, 50):
-            await ctx.reply(f"Command failed - you don't have permission to run this command.\nThis command requires permission level {50}, while your level is only {self.bot.permhelper.getUserPermLevel(ctx.author)}.", mention_author=False)
-            return
         
         if not msg:
             if ctx.message.reference:
@@ -77,11 +74,44 @@ class UtilCommands(commands.Cog):
                 await ctx.reply("Command failed - no message provided.\nEither reply to a target message with the command, or provide a link to it as an argument.", mention_author=False)
                 return
         
-        perms = msg.channel.permissions_for(ctx.author)
-        if perms.read_messages and perms.read_message_history:
-            await ctx.reply(file=discord.File(StringIO(msg.content), filename=f"message_source_of_{msg.id}.txt"), mention_author=False)
+        if not msg.type == discord.MessageType.default:
+            await ctx.reply("Command failed - invalid message type.", mention_author=False)
+            return
+        
+        hasDestinationPerms = False
+        if isinstance(msg.channel, discord.DMChannel):
+            if msg.channel.recipient != ctx.author:
+                await ctx.reply(f"Command failed - you do not have permission to read messages in others' DMs!", mention_author=False)
+                return
+            hasDestinationPerms = True
         else:
-            await ctx.reply("Command failed - you do not have permissions to read messages in that channel!", mention_author=False)
+            if msg.channel.guild != ctx.guild:
+                otherGuildMember = msg.channel.guild.get_member(ctx.author.id)
+                if not otherGuildMember or not self.bot.permhelper.isUserAbove(otherGuildMember, 50):
+                    await ctx.reply(f"Command failed - you do not have permission to run this command for that server!", mention_author=False)
+                    return
+                perms = msg.channel.permissions_for(otherGuildMember)
+                if perms.read_messages and perms.read_message_history:
+                    hasDestinationPerms = True
+            else:
+                perms = msg.channel.permissions_for(ctx.author)
+                if perms.read_messages and perms.read_message_history:
+                    hasDestinationPerms = True
+
+        if isinstance(ctx.channel, discord.TextChannel) and not self.bot.permhelper.isUserAbove(ctx.author, 50):
+            await ctx.reply(f"Command failed - you don't have permission to run this command in this server.\nThis command requires permission level {50}, while your level is only {self.bot.permhelper.getUserPermLevel(ctx.author)}.", mention_author=False)
+            return
+            
+        if not hasDestinationPerms:
+            await ctx.reply("Command failed - you do not have permission to read messages in that channel!", mention_author=False)
+            return
+
+        await ctx.reply(
+            file=discord.File(StringIO(msg.content),
+            filename=f"message_source_of_{msg.id}.txt"),
+            mention_author=False
+        )
+    
     @msgSource.error
     async def msgSourceError(self, ctx: commands.Context, error: commands.CommandError):
         if isinstance(error, commands.MessageNotFound):

@@ -57,4 +57,5 @@ def getTimeDuration(val: str) -> timedelta:
     currentDatetime = datetime.now()
     futureDatetime = currentDatetime + relativedelta(years=duration["y"], months=duration["M"], weeks=duration["w"], days=duration["d"], hours=duration["h"], minutes=duration["m"], seconds=duration["s"])
     
+    #the adition and subtraction of currentDatetime doesn't cancel out, both are necessary
     return futureDatetime-currentDatetime

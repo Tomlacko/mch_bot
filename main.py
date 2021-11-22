@@ -3,15 +3,13 @@ from discord.ext import commands
 
 from os import path
 
+from utils.permissions import PermissionHelper
 import config
 
-from utils.permissions import PermissionHelper
 
-
-
-intents = discord.Intents.default()
+intents = discord.Intents.all()#.default()
 # pylint: disable=assigning-non-slot
-intents.members = True
+#intents.members = True
 
 activity = discord.Activity(type=config.bot_status_type, name=config.bot_status_message)
 

@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+
 import asyncio
 from time import time
 
@@ -75,7 +76,11 @@ class BottomMessage(commands.Cog):
         
         while time() < stopRemovingReactionsTime:
             try:
-                reaction, user = await self.bot.wait_for("reaction_add", check=check, timeout=stopRemovingReactionsTime-time()+1)
+                reaction, user = await self.bot.wait_for(
+                    "reaction_add",
+                    check=check,
+                    timeout=stopRemovingReactionsTime-time()+1
+                )
             except asyncio.TimeoutError:
                 pass
             await self.message.clear_reactions()

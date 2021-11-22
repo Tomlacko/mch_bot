@@ -1,10 +1,9 @@
 import discord
 from discord.ext import commands
 
-from jira import JIRA
-
-import dateutil.parser as dateparser
 import re
+import dateutil.parser as dateparser
+from jira import JIRA
 
 from utils.commonutils import *
 

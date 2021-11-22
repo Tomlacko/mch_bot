@@ -48,6 +48,7 @@ class MathStuff(commands.Cog):
             temp = start
             start = stop
             stop = temp
+        start, stop = sorted([(start or 0), (stop or 1)])
         await ctx.reply(str(random.randint(start, stop)), mention_author=False)
     @randomInt.error
     async def randomIntError(self, ctx: commands.Context, error: commands.CommandError):

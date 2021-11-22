@@ -7,6 +7,7 @@ from utils.time_duration_converter import TimeDurationSeconds
 from time import time
 
 from utils.simpledb import SimpleDB
+from utils.commonutils import pluralSuffix
 
 import config
 
@@ -51,7 +52,7 @@ class Muteme(commands.Cog):
             await self.mutesdb.saveData(data)
 
             await author.add_roles(muted_role, reason="Used the muteme command.", atomic=True)
-            await ctx.reply(f"Muted <@{author.id}> for {duration} seconds. 🗿\n*You will be unmuted <t:{end_timestamp}:R> (<t:{end_timestamp}:F>).*", mention_author=False)
+            await ctx.reply(f"Muted <@{author.id}> for {duration} second{pluralSuffix(duration)}. 🗿\n*You will be unmuted <t:{end_timestamp}:R> (<t:{end_timestamp}:F>).*", mention_author=False)
             
             await self.unmuteAt(author, end_timestamp)
     
