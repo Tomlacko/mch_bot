@@ -1,7 +1,0 @@
-dependencies:
-
-discord.py
-python-dateutil
-aiofiles
-jishaku
-jira
