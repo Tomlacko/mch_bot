@@ -12,10 +12,10 @@ class TestCommands(commands.Cog):
     
 
     @commands.Cog.listener()
-    async def on_message(self, message: discord.Message):
+    async def on_message(self, msg: discord.Message):
         #log DMs
-        if not message.guild:
-            print(f"\nDM from {message.author} ({message.author.id}): {message.content}")
+        if not msg.guild:
+            print(f"\nDM from {msg.author} ({msg.author.id}): {msg.content}")
 
 
     @commands.command(name="ping")

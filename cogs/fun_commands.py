@@ -39,15 +39,15 @@ class FunCommands(commands.Cog):
     async def spampingError(self, ctx: commands.Context, error: commands.CommandError):
         await ctx.reply(f"Command failed.\nUse `{self.bot.config.bot_prefix}spamping <user> [amount (default=3, min=1, max=5)] [delay (default=2, min=1, max=5)]`.", mention_author=False)
     
-    @commands.command(name="answer", aliases=["question"])
+    @commands.command(name="answer", aliases=["question, ask"])
     async def randomAnswer(self, ctx: commands.Context, *, question: str = ""):
         """Gives a consistent answer to a yes/no question"""
         if not question:
             await ctx.reply(f"Command failed - no question was asked.\nWrite a question after the command and you'll get a consistent answer.", mention_author=False)
         else:
             options = ["No", "Yes", "Most-likely no", "Most-likely yes", "Unsure", "That is confidential information"]
-            result = sha256(' '.join(question.split()).lower().encode("utf-8")).digest()[0]
-            answer = options[result%len(options)]
+            result = sha256(" ".join(question.split()).lower().encode("ascii", "ignore")).digest()[0]
+            answer = options[result % len(options)]
             await ctx.reply(f"{answer}.", mention_author=False)
 
 

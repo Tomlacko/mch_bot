@@ -1,4 +1,4 @@
-TOKEN = "PUT_YOUR_TOKEN_HERE"
+TOKEN = "PUT_YOUR_BOT_TOKEN_HERE"
 
 bot_prefix = "mch!"
 bot_status_type = 2 #unknown = -1, playing = 0, streaming = 1, listening = 2, watching = 3, custom = 4, competing = 5
@@ -26,6 +26,7 @@ cogs = {
     "mojira_embeds": True,
     "fun_commands": True,
     "mathstuff": True,
+    "modmail": True,
 
     "debugging": False
 }
@@ -41,37 +42,3 @@ permission_levels = {
     756990603945967639: 20, #Member
     766083300682498088: 10, #Project Contributor
 }
-
-
-
-#-----------
-
-#unfinished:
-#bugtracker embed
-
-
-#todo:
-#member.joined_at.timestamp()
-#change all replies to actual replies, don't mention users in unwanted messages
-#votepin
-#message source, archiving
-#load/unload cogs with a command
-#dynamic config storage
-#grass offsets
-#seed utils (valid seed, sister seeds, shadow seed...)
-#russian roulette, randomizer
-#brighten img
-#cortex perspective
-#invite generator
-#programmer's math
-#tags saved to file
-#https://github.com/MostAwesomeDude/java-random
-
-#slash commands: disnake
-#free hosting - heroku
-
-
-"""
-mem.send(file=discord.File(io!.StringIO(json!.dumps(msgs)), filename="messages.json"))
-await _ctx.message.reference.resolved.reply("pong"))
-"""
