@@ -13,3 +13,8 @@ This bot relies on:
 - jishaku
 
 Install these before you can run the bot (except jishaku which is optional if you turn it off in the config).
+
+# Credits
+- Created by Tomlacko#2976
+- Bot tutorial & some help from vcokltfre#6868 (https://vcokltfre.dev/)
+- Hosted in Minecraft@Home by Philipp_DE#1337
