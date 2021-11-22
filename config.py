@@ -41,3 +41,37 @@ permission_levels = {
     756990603945967639: 20, #Member
     766083300682498088: 10, #Project Contributor
 }
+
+
+
+#-----------
+
+#unfinished:
+#bugtracker embed
+
+
+#todo:
+#member.joined_at.timestamp()
+#change all replies to actual replies, don't mention users in unwanted messages
+#votepin
+#message source, archiving
+#load/unload cogs with a command
+#dynamic config storage
+#grass offsets
+#seed utils (valid seed, sister seeds, shadow seed...)
+#russian roulette, randomizer
+#brighten img
+#cortex perspective
+#invite generator
+#programmer's math
+#tags saved to file
+#https://github.com/MostAwesomeDude/java-random
+
+#slash commands: disnake
+#free hosting - heroku
+
+
+"""
+mem.send(file=discord.File(io!.StringIO(json!.dumps(msgs)), filename="messages.json"))
+await _ctx.message.reference.resolved.reply("pong"))
+"""

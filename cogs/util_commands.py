@@ -3,12 +3,13 @@ from discord.ext import commands
 
 from time import time
 from io import StringIO
+from hashlib import sha256
+import base64
 
 # pylint: disable=import-error
 from utils.color_converter import Autocolor
 # pylint: disable=import-error
 from utils.time_duration_converter import TimeDurationSeconds
-
 from utils import commonutils
 
 
@@ -63,7 +64,13 @@ class UtilCommands(commands.Cog):
         snowtime = commonutils.snowflakeToTime(sn)
         await ctx.reply(f"Snowflake timestamp: {snowtime}\n(<t:{snowtime}:F>)", mention_author=False)
     
-    @commands.command(name="msgsource")
+    @commands.command(name="sha256", aliases=["hash"])
+    async def sha256Command(self, ctx: commands.Context, *, text: str = ""):
+        """Converts the given text into a sha256 hash"""
+        result = sha256(text.encode("utf-8"))
+        await ctx.reply(f"**Hex:** `{result.hexdigest()}`\n**Base64:** `{base64.b64encode(result.digest()).decode('utf-8')}`", mention_author=False)
+    
+    @commands.command(name="msgsource", aliases=["source", "msgsrc"])
     async def msgSource(self, ctx: commands.Context, msg: discord.Message = None):
         """Replies with the raw contents of a message uploaded in a file."""
         

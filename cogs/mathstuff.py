@@ -25,16 +25,21 @@ class MathStuff(commands.Cog):
 
 
 
-    @commands.command(name="random", aliases=["randomchoice", "randombool"])
+    @commands.command(name="choose", aliases=["randomchoice", "choice"])
     async def randomChoice(self, ctx: commands.Context, *choices: str):
         """Chooses one of the arguments randomly"""
         if not choices:
-            choices = ("No", "Yes")
-        if len(choices)==1:
+            await ctx.reply(f"Command failed - no arguments given.\nEnter a sequence of arguments to choose from (you can use quotes for grouping).", mention_author=False)
+        elif len(choices)==1:
             await ctx.reply(f"After some extremely randomized choosing from the one singular option that was given to choose from, the surprising result is:\n{choices[0]}", mention_author=False)
         else:
             await ctx.reply(f"Randomly chosen result:\n{random.choice(choices)}", mention_author=False)
     
+    @commands.command(name="randombool", aliases=["random"])
+    async def randomBool(self, ctx: commands.Context):
+        """Says True or False randomly"""
+        await ctx.reply(f"Randomly chosen result:\n**{random.choice(['False', 'True'])}**", mention_author=False)
+
     @commands.command(name="randomint", aliases=["randomnum"])
     async def randomInt(self, ctx: commands.Context, start: int = None, stop: int = None):
         """Chooses a random whole number from a range (inclusive)"""
