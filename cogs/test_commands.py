@@ -31,7 +31,7 @@ class TestCommands(commands.Cog):
         await message.edit(content=f"Pong!\nWebsocket latency: {websocket_latency}s\nAPI latency: {api_latency}s")
 
 
-    @commands.command(name="say")
+    @commands.command(name="say", aliases=["echo"])
     async def say(self, ctx: commands.Context, *, text: str = ""):
         """Repeat what the user says"""
         text = text.strip()

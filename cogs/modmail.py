@@ -43,7 +43,7 @@ class Modmail(commands.Cog):
         await user.send(text, files=[await att.to_file() for att in ctx.message.attachments])
         
         if not user.id in self.activeDMs:
-            await ctx.reply(f"Message sent! Any replies will be posted in this channel until a bot restart.", mention_author=False)
+            await ctx.reply(f"__Message to {user.mention} has been sent!__\nAny replies will be posted in this channel until a bot restart.", mention_author=False, allowed_mentions=discord.AllowedMentions.none())
         
         self.activeDMs[user.id] = ctx.channel
         await ctx.message.add_reaction("✅")
@@ -65,7 +65,7 @@ class Modmail(commands.Cog):
                     await ctx.reply(f"Command failed - no active DMs to close.", mention_author=False)
                 else:
                     await linkedChannel.send(f"__{ctx.author.mention} closed the DM.__", allowed_mentions=discord.AllowedMentions.none())
-                    await ctx.reply(f"The active DM was closed.", mention_author=False)
+                    await ctx.reply(f"The DM link has been successfully closed and your messages will no longer be sent.", mention_author=False)
             else:
                 await ctx.reply(f"Command failed - no user was specified.", mention_author=False)
         else:
@@ -74,13 +74,13 @@ class Modmail(commands.Cog):
                 await ctx.reply(f"Command failed - no active DMs to close with that user.", mention_author=False)
             else:
                 await ctx.reply(f"DMs with {user.mention} have now been closed.", mention_author=False, allowed_mentions=discord.AllowedMentions.none())
-                await user.send("*The moderators have now closed this DM.*")
+                await user.send("*The moderators have now closed this DM and your messages will no longer be sent.*")
     @closeDm.error
     async def closeDmError(self, ctx: commands.Context, error: commands.CommandError):
         await ctx.reply(f"Command failed.\n`{error}`", mention_author=False)
 
-        
-        
+
+
 
 
 def setup(bot: commands.Bot):

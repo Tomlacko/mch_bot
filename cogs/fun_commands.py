@@ -3,7 +3,10 @@ from discord.ext import commands
 
 import asyncio
 from hashlib import sha256
+import re
 
+
+stripAlphaNumRegex = re.compile(r"[^a-z0-9 ]")
 
 class FunCommands(commands.Cog):
     """Random joke commands for having fun"""
@@ -46,7 +49,8 @@ class FunCommands(commands.Cog):
             await ctx.reply(f"Command failed - no question was asked.\nWrite a question after the command and you'll get a consistent answer.", mention_author=False)
         else:
             options = ["No", "Yes", "Most-likely no", "Most-likely yes", "Unsure", "That is confidential information"]
-            result = sha256(" ".join(question.split()).lower().encode("ascii", "ignore")).digest()[0]
+            preprocessed = " ".join(stripAlphaNumRegex.sub("", question.lower()).split()).encode("ascii", "ignore")
+            result = sha256(preprocessed).digest()[0]
             answer = options[result % len(options)]
             await ctx.reply(f"{answer}.", mention_author=False)
 

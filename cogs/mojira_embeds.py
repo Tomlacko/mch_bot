@@ -115,7 +115,10 @@ async def getIssueDataMC(issueID: str) -> dict:
 
     return data
 
-
+def parseDescription(markupText: str) -> str:
+    #TODO
+    #testing example https://bugs.mojang.com/browse/MC-242547
+    pass
 
 
 
