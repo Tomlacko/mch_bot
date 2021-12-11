@@ -3,7 +3,7 @@ from discord.ext import commands
 
 from os import path
 import asyncio
-import sys
+from sys import stdin
 
 from utils.permissions import PermissionHelper
 import config
@@ -129,12 +129,12 @@ async def on_ready():
     if bot.config.use_console:
         print("\n--- Done! Bot fully loaded! (Type 'quit' to stop it.) ---\n")
         loop = asyncio.get_event_loop()
-        loop.add_reader(sys.stdin, relay_console_input)
+        loop.add_reader(stdin, relay_console_input)
     else:
         print("\n--- Done! Bot fully loaded! (Press CTRL+C to stop it.) ---\n")
     
 def relay_console_input():
-    input_line = sys.stdin.readline().rstrip("\n")
+    input_line = stdin.readline().rstrip("\n")
     
     #handle the input via a cog
     botConsole = bot.get_cog("BotConsole")
