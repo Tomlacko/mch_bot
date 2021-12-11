@@ -2,6 +2,8 @@ import discord
 from discord.ext import commands
 
 from os import path
+import asyncio
+import sys
 
 from utils.permissions import PermissionHelper
 import config
@@ -26,6 +28,9 @@ bot = commands.Bot(
     activity=activity
 )
 
+bot.is_loaded = False
+bot.logs_channel = None #loaded later
+
 bot.config = config
 bot.permhelper = PermissionHelper(bot.config.permission_levels)
 bot.globaldata = {}
@@ -41,26 +46,35 @@ bot.globaldata["dbdir"] = path.join(bot.globaldata["cwd"], bot.config.database_d
 
 
 def load_cogs(dir: str):
-    print("\nLoading cogs...")
+    print("Loading core cogs...")
 
     botdata = bot.globaldata["status"]
 
-    botdata["cogs_total"] += 1
-    if bot.config.use_jishaku:
-        try:
-            bot.load_extension("jishaku")
-        except:
-            botdata["cogs_failed"] += 1
-            botdata["coglist"]["jishaku"] = "Failed"
-            print("x jishaku failed to load!")
+    #load core cogs
+    core_cogs = {
+        "jishaku": bot.config.use_jishaku,
+        "bot_console": bot.config.use_console
+    }
+    for ext_name, ext_enabled in core_cogs.items():
+        botdata["cogs_total"] += 1
+        if ext_enabled:
+            try:
+                bot.load_extension(ext_name)
+            except:
+                botdata["cogs_failed"] += 1
+                botdata["coglist"][ext_name] = "Failed"
+                print(f"x {ext_name} failed to load!")
+            else:
+                botdata["cogs_loaded"] += 1
+                botdata["coglist"][ext_name] = "Loaded"
+                print(f"+ {ext_name} loaded succesfully!")
         else:
-            botdata["cogs_loaded"] += 1
-            botdata["coglist"]["jishaku"] = "Loaded"
-            print("+ jishaku loaded succesfully!")
-    else:
-        botdata["cogs_disabled"] += 1
-        botdata["coglist"]["jishaku"] = "Disabled"
+            botdata["cogs_disabled"] += 1
+            botdata["coglist"][ext_name] = "Disabled"
 
+    print("Loading additional cogs...")
+
+    #load additional cogs
     for ext_name, ext_enabled in config.cogs.items():
         botdata["cogs_total"] += 1
         if ext_enabled:
@@ -84,26 +98,48 @@ def load_cogs(dir: str):
             botdata["coglist"][ext_name] = "Disabled"
             print(f"- Skipping {ext_name}...")
     
-    print(f"Cog loading done, loaded {botdata['cogs_loaded']}/{botdata['cogs_total']} cogs. ({botdata['cogs_failed']} failed, {botdata['cogs_disabled']} skipped)\n")
+    print(f"Cog initializing done, loaded {botdata['cogs_loaded']}/{botdata['cogs_total']} cogs. ({botdata['cogs_failed']} failed, {botdata['cogs_disabled']} skipped)")
 
     if botdata["cogs_failed"] > 0:
         if input("Some cogs failed to load. Load bot regardless? (y): ")!="y":
             print("Quitting...")
             exit()
 
+
+print("\n--- Starting the bot ---")
 load_cogs(bot.config.cogs_dir)
+print("---------------")
+print("Bot is loading... (waiting for an on_ready event)")
 
 
 @bot.event
 async def on_ready():
-    #do not put code here?
-    print("-----")
-    print("Bot fully loaded!")
-
-    if config.log_onload_event:
-        logchannel = bot.get_channel(config.bot_logs_channel_id)
-        await logchannel.send(f"**Bot loaded!**\n{bot.globaldata['status']['cogs_loaded']}/{bot.globaldata['status']['cogs_total']} cogs loaded, {bot.globaldata['status']['cogs_failed']} failed, {bot.globaldata['status']['cogs_disabled']} skipped.")
+    if bot.is_loaded:
+        print("*Bot reconnected*\n")
+        return
     
+    bot.is_loaded = True
+
+    if config.bot_logs_channel_id:
+        bot.logs_channel = bot.get_channel(config.bot_logs_channel_id)
+
+    if bot.config.send_message_on_startup and bot.logs_channel:
+        await bot.logs_channel.send(f"**Bot loaded!**\n{bot.globaldata['status']['cogs_loaded']}/{bot.globaldata['status']['cogs_total']} cogs loaded, {bot.globaldata['status']['cogs_failed']} failed, {bot.globaldata['status']['cogs_disabled']} skipped.")
+    
+    if bot.config.use_console:
+        print("\n--- Done! Bot fully loaded! (Type 'quit' to stop it.) ---\n")
+        loop = asyncio.get_event_loop()
+        loop.add_reader(sys.stdin, relay_console_input)
+    else:
+        print("\n--- Done! Bot fully loaded! (Press CTRL+C to stop it.) ---\n")
+    
+def relay_console_input():
+    input_line = sys.stdin.readline().rstrip("\n")
+    
+    #handle the input via a cog
+    botConsole = bot.get_cog("BotConsole")
+    if botConsole is not None:
+        asyncio.create_task(botConsole.receive_input(input_line))
 
 
 bot.run(bot.config.TOKEN)

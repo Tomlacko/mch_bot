@@ -28,7 +28,7 @@ class AndrewThing(commands.Cog):
             return
         
         #cooldown to prevent triggering itself repeatedly
-        if self.last_triggered_when and self.last_triggered_when > when-timedelta(hours=2):
+        if self.last_triggered_when and self.last_triggered_when > when-timedelta(hours=1):
             return
 
         #reset progress if no further typing was done for a while

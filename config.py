@@ -4,14 +4,17 @@ bot_prefix = "mch!"
 bot_status_type = 2 #unknown = -1, playing = 0, streaming = 1, listening to = 2, watching = 3, custom = 4, competing = 5
 bot_status_message = f"{bot_prefix} prefix"
 
-bot_owner_id = 263862604915539969 #Tomlacko, can use Application owners if set to None
+bot_owner_id = 263862604915539969 #Tomlacko | will query Application owners if set to None
 
-bot_logs_channel_id = 729090739702595596 #bot-logs
 muted_role_id = 721780279643209789
 
-log_onload_event = True
+
+bot_logs_channel_id = 729090739702595596 #bot-logs
+send_message_on_startup = True
+send_message_on_quit = False #only works when quitting through the console, for which use_console needs to be enabled
 
 use_jishaku = True
+use_console = True
 
 database_dir = "database"
 cogs_dir = "cogs"
