@@ -4,6 +4,7 @@ from discord.ext import commands
 from os import path
 import asyncio
 from sys import stdin
+from datetime import datetime
 
 from utils.permissions import PermissionHelper
 import config
@@ -21,9 +22,9 @@ bot = commands.Bot(
     intents=intents,
     allowed_mentions=discord.AllowedMentions(
         users=True,
+        replied_user=True,
         everyone=False,
-        roles=False,
-        replied_user=True
+        roles=False
     ),
     activity=activity
 )
@@ -63,11 +64,11 @@ def load_cogs(dir: str):
             except:
                 botdata["cogs_failed"] += 1
                 botdata["coglist"][ext_name] = "Failed"
-                print(f"x {ext_name} failed to load!")
+                print(f"x '{ext_name}' failed to load!")
             else:
                 botdata["cogs_loaded"] += 1
                 botdata["coglist"][ext_name] = "Loaded"
-                print(f"+ {ext_name} loaded succesfully!")
+                print(f"+ '{ext_name}' loaded succesfully!")
         else:
             botdata["cogs_disabled"] += 1
             botdata["coglist"][ext_name] = "Disabled"
@@ -83,11 +84,11 @@ def load_cogs(dir: str):
                 bot.load_extension(dir.replace("/", ".") + "." + ext_name)
             except Exception as e:
                 botdata["cogs_failed"] += 1
-                print(f"x Failed to load {ext_name}! Exception: {e}")
+                print(f"x Failed to load '{ext_name}'! Exception: {e}")
             else:
                 botdata["cogs_loaded"] += 1
                 success = True
-                print(f"+ Loaded {ext_name} successfully.")
+                print(f"+ Loaded '{ext_name}' successfully.")
             
             if success:
                 botdata["coglist"][ext_name] = "Loaded"
@@ -96,7 +97,7 @@ def load_cogs(dir: str):
         else:
             botdata["cogs_disabled"] += 1
             botdata["coglist"][ext_name] = "Disabled"
-            print(f"- Skipping {ext_name}...")
+            print(f"- Skipping '{ext_name}'...")
     
     print(f"Cog initializing done, loaded {botdata['cogs_loaded']}/{botdata['cogs_total']} cogs. ({botdata['cogs_failed']} failed, {botdata['cogs_disabled']} skipped)")
 
@@ -115,7 +116,7 @@ print("Bot is loading... (waiting for an on_ready event)")
 @bot.event
 async def on_ready():
     if bot.is_loaded:
-        print("*Bot reconnected*\n")
+        print(f"[{datetime.now()}] ***Bot reconnected***\n")
         return
     
     bot.is_loaded = True
@@ -127,11 +128,11 @@ async def on_ready():
         await bot.logs_channel.send(f"**Bot loaded!**\n{bot.globaldata['status']['cogs_loaded']}/{bot.globaldata['status']['cogs_total']} cogs loaded, {bot.globaldata['status']['cogs_failed']} failed, {bot.globaldata['status']['cogs_disabled']} skipped.")
     
     if bot.config.use_console:
-        print("\n--- Done! Bot fully loaded! (Type 'quit' to stop it.) ---\n")
+        print("\n--- Done, bot fully loaded! (Type 'quit' to stop it.) ---\n")
         loop = asyncio.get_event_loop()
         loop.add_reader(stdin, relay_console_input)
     else:
-        print("\n--- Done! Bot fully loaded! (Press CTRL+C to stop it.) ---\n")
+        print("\n--- Done, bot fully loaded! (Press CTRL+C to stop it.) ---\n")
     
 def relay_console_input():
     input_line = stdin.readline().rstrip("\n")

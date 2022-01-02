@@ -10,7 +10,7 @@ andrewID = 423564249122471936
 
 
 class AndrewThing(commands.Cog):
-    """When the andrew is typing 😳 😱"""
+    """When the andrew is typing 😳😱"""
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
