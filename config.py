@@ -21,7 +21,7 @@ use_console = True
 database_dir = "database"
 cogs_dir = "cogs"
 cogs = {
-    "test_commands": True,
+    "core_commands": True,
     "util_commands": True,
     "embed_creator": True,
     "welcome_messages": False,
@@ -49,4 +49,3 @@ permission_levels = {
     722845569403322369: 50, #PCA
     756990603945967639: 20, #Member
     766083300682498088: 10, #Project Contributor
-}

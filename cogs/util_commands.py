@@ -69,7 +69,7 @@ class UtilCommands(commands.Cog):
         result = sha256(text.encode("utf-8"))
         await ctx.reply(f"**Hex:** `{result.hexdigest()}`\n**Base64:** `{base64.b64encode(result.digest()).decode('utf-8')}`", mention_author=False)
     
-    @commands.command(name="msgsource", aliases=["source", "msgsrc"])
+    @commands.command(name="msgSource", aliases=["msgsource", "msgsrc", "msgSrc"])
     async def msgSource(self, ctx: commands.Context, msg: discord.Message = None):
         """Replies with the raw contents of a message uploaded in a file."""
         
@@ -80,7 +80,7 @@ class UtilCommands(commands.Cog):
                 await ctx.reply("Command failed - no message provided.\nEither reply to a target message with the command, or provide a link to it as an argument.", mention_author=False)
                 return
         
-        if not msg.type == discord.MessageType.default:
+        if not msg.type == discord.MessageType.default and not msg.type == 19: #19==replies
             await ctx.reply("Command failed - invalid message type.", mention_author=False)
             return
         
@@ -113,7 +113,7 @@ class UtilCommands(commands.Cog):
             return
 
         await ctx.reply(
-            file=textFileAttachment(f"message_source_of_{msg.id}.txt", msg.content),
+            file=textFileAttachment(f"msgsrc_{'dm' if isinstance(msg.channel, discord.DMChannel) else msg.channel.guild.id}_{msg.channel.id}_{msg.id}.txt", msg.content),
             mention_author=False
         )
     

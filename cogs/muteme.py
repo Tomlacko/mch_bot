@@ -12,7 +12,7 @@ from utils.commonutils import pluralSuffix
 import config
 
 
-muteme_max_limit = 24*60*60 #1 day
+muteme_max_limit = 24*60*60 #1 day in seconds
 
 
 class Muteme(commands.Cog):

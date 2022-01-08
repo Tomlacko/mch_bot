@@ -11,11 +11,11 @@ from utils.simpledb import SimpleDB
 
 
 staff_role_id = 766054073157419008
-duration = 100 #100 seconds
+duration = 100 #seconds
 
 
 class GiveMod(commands.Cog):
-    """Give yourself the staff role (as a joke)"""
+    """Give people the staff role as a joke"""
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
