@@ -77,6 +77,22 @@ __**List of cogs:**__
         
         text += "```"
         await ctx.reply(text, mention_author=False)
+    
+    @commands.command(name="shutdown")
+    async def shutdownCommand(self, ctx: commands.Context):
+        """Turns off the bot"""
+
+        if not self.bot.permhelper.isUserAbove(ctx.author, 100):
+            await ctx.reply("You do not have permission to run this command! (Required level = 100)", mention_author=False)
+            return
+        
+        await ctx.reply("Shutting down...", mention_author=False)
+        print(f"Shutdown command triggered by {ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})")
+
+        if self.bot.config.send_message_on_quit and self.bot.logs_channel:
+            await self.bot.logs_channel.send("Stopping the bot...")
+        await self.bot.close()
+
 
 
 

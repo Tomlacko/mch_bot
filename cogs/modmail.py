@@ -47,9 +47,10 @@ class Modmail(commands.Cog):
         
         self.activeDMs[user.id] = ctx.channel
         await ctx.message.add_reaction("✅")
+    
     @dmCommand.error
     async def dmCommandError(self, ctx: commands.Context, error: commands.CommandError):
-        await ctx.reply(f"Command failed.\n`{error}`", mention_author=False)
+        await ctx.reply(f"Command failed.\n`{error.__class__.__name__}: {error}`", mention_author=False)
     
 
     @commands.command(name="closedm")
@@ -75,9 +76,10 @@ class Modmail(commands.Cog):
             else:
                 await ctx.reply(f"DMs with {user.mention} have now been closed.", mention_author=False, allowed_mentions=discord.AllowedMentions.none())
                 await user.send("*The moderators have now closed this DM and your messages will no longer be sent.*")
+    
     @closeDm.error
     async def closeDmError(self, ctx: commands.Context, error: commands.CommandError):
-        await ctx.reply(f"Command failed.\n`{error}`", mention_author=False)
+        await ctx.reply(f"Command failed.\n`{error.__class__.__name__}: {error}`", mention_author=False)
 
 
 

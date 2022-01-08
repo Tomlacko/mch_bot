@@ -150,10 +150,10 @@ class MojiraEmbeds(commands.Cog):
     
     @mojiraCommand.error
     async def mojiraCommandError(self, ctx: commands.Context, error: commands.CommandError):
-        if isinstance(error, commands.MissingRequiredArgument) or isinstance(error, commands.BadArgument) or isinstance(error, commands.ConversionError):
+        if isinstance(error, commands.BadArgument) or isinstance(error, commands.MissingRequiredArgument) or isinstance(error, commands.ConversionError):
             await ctx.reply(f"Command failed - bad formatting.\nUse `{self.bot.config.bot_prefix}mojira <bug-id>` (Example of bug-id: `MC-1337`).", mention_author=False)
         else:
-            await ctx.reply("Command failed.", mention_author=False)
+            await ctx.reply(f"Command failed.\n`{error.__class__.__name__}: {error}`", mention_author=False)
     
     
     async def showMojiraEmbed(self, ctx: commands.Context, issueID: str, hideErrors: bool = True):
@@ -190,6 +190,7 @@ class MojiraEmbeds(commands.Cog):
                 embed.set_thumbnail(url=data["image"])
 #column1:
             embed.add_field(name="Status:", value=f"""{data["status"]}
+
 **Resolution:**
 {data["resolution"]}
 
@@ -210,6 +211,7 @@ class MojiraEmbeds(commands.Cog):
 
 **Reported by:**
 {data["reporter"]}
+
 **Report date:**
 <t:{data["created_time"]}:d> <t:{data["created_time"]}:t>
 (<t:{data["created_time"]}:R>)""", inline=True)

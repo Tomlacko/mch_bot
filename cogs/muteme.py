@@ -21,10 +21,16 @@ class Muteme(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.mutesdb = SimpleDB(self.bot.globaldata["dbdir"], "muteme")
+        self.loaded = False
     
     @commands.Cog.listener()
     async def on_ready(self):
         """Reload active mutes."""
+
+        if self.loaded:
+            return
+        self.loaded = True
+        
         data = await self.mutesdb.getData()
         for guild_id, guild_data in data.items():
             guild = self.bot.get_guild(int(guild_id))
@@ -60,10 +66,11 @@ class Muteme(commands.Cog):
     async def mutemeError(self, ctx: commands.Context, error: commands.CommandError):
         if isinstance(error, commands.NoPrivateMessage):
             await ctx.reply("This command can only be run in a server.", mention_author=False)
-        elif isinstance(error, commands.BadArgument) or isinstance(error, commands.ConversionError):
+        elif isinstance(error, commands.BadArgument) or isinstance(error, commands.MissingRequiredArgument) or isinstance(error, commands.ConversionError):
             await ctx.reply(f"Command failed - bad formatting.\nUse `{self.bot.config.bot_prefix}muteme [duration (default=1m, min=1s, max=24h)]`, where `duration` has format `yMwdhms`\nExample: `2h15s`.", mention_author=False)
         else:
-            await ctx.reply("Command failed.", mention_author=False)
+            await ctx.reply(f"Command failed.\n`{error.__class__.__name__}: {error}`", mention_author=False)
+
 
     async def unmuteAt(self, member: discord.Member, end_timestamp):
         duration = end_timestamp - round(time())
@@ -77,7 +84,7 @@ class Muteme(commands.Cog):
         await self.mutesdb.saveData(data)
 
         muted_role = discord.utils.get(member.guild.roles, id=config.muted_role_id)
-        await member.remove_roles(muted_role, reason="muteme expired.", atomic=True)
+        await member.remove_roles(muted_role, reason="muteme expired", atomic=True)
     
 
 

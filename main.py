@@ -30,6 +30,7 @@ bot = commands.Bot(
 )
 
 bot.is_loaded = False
+bot.main_guild = None #loaded later
 bot.logs_channel = None #loaded later
 
 bot.config = config
@@ -123,6 +124,8 @@ async def on_ready():
 
     if config.bot_logs_channel_id:
         bot.logs_channel = bot.get_channel(config.bot_logs_channel_id)
+
+    bot.main_guild = bot.get_guild(bot.config.main_server_id)
 
     if bot.config.send_message_on_startup and bot.logs_channel:
         await bot.logs_channel.send(f"**Bot loaded!**\n{bot.globaldata['status']['cogs_loaded']}/{bot.globaldata['status']['cogs_total']} cogs loaded, {bot.globaldata['status']['cogs_failed']} failed, {bot.globaldata['status']['cogs_disabled']} skipped.")

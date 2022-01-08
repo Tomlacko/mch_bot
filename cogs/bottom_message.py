@@ -34,11 +34,17 @@ class BottomMessage(commands.Cog):
         self.bot = bot
         self.started = False
         self.message = None
+        self.loaded = False
 
 
     @commands.Cog.listener()
     async def on_ready(self):
         """Get the last self message on startup, if it exists."""
+        
+        if self.loaded:
+            return
+        self.loaded = True
+
         channel = self.bot.get_channel(channelID)
 
         success = False

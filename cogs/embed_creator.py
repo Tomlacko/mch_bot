@@ -16,7 +16,7 @@ class EmbedCreator(commands.Cog):
     
     @makeSimpleEmbed.error
     async def makeSimpleEmbedError(self, ctx: commands.Context, error: commands.CommandError):
-        await ctx.send("Failed to create embed.")
+        await ctx.send(f"Failed to create embed.\n`{error.__class__.__name__}: {error}`")
         
 
 

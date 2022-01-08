@@ -6,7 +6,6 @@ from utils import commonutils
 
 
 threshold = 24 * 3600 * 7 #1 week
-alert_channel = 737298182912082072
 
 
 class NewAccountsAlerts(commands.Cog):
@@ -19,8 +18,7 @@ class NewAccountsAlerts(commands.Cog):
     async def on_member_join(self, member: discord.Member):
         if member.bot:
             return
-        
-        channel = self.bot.get_channel(alert_channel)
+
         acc_age = commonutils.snowflakeToTime(member.id)
 
         if time()-acc_age < threshold:
@@ -29,8 +27,8 @@ class NewAccountsAlerts(commands.Cog):
             h = (acc_age // 3600) % 24
             d = (acc_age // 86400) % 7
 
-            await channel.send(f"NEW USER: {member.mention} ({member.id}) was created in the last week! ({d}d {h}h {m}m {s}s ago)")#, allowed_mentions=discord.AllowedMentions.none()) #must ping, otherwise doesn't show usernames
-            #await member.kick(reason="raid")
+            alert_channel = self.bot.get_channel(self.bot.config.alert_channel_id)
+            await alert_channel.send(f"NEW USER: {member.mention} ({member.id}) was created in the last week! ({d}d {h}h {m}m {s}s ago)")#, allowed_mentions=discord.AllowedMentions.none()) #must ping, otherwise doesn't show usernames
         
 
 

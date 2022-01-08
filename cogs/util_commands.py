@@ -2,7 +2,6 @@ import discord
 from discord.ext import commands
 
 from time import time
-from io import StringIO
 from hashlib import sha256
 import base64
 
@@ -10,7 +9,7 @@ import base64
 from utils.color_converter import Autocolor
 # pylint: disable=import-error
 from utils.time_duration_converter import TimeDurationSeconds
-from utils import commonutils
+from utils.commonutils import snowflakeToTime, textFileAttachment
 
 
 
@@ -61,7 +60,7 @@ class UtilCommands(commands.Cog):
             await ctx.reply("Command failed - invalid snowflake", mention_author=False)
             return
         
-        snowtime = commonutils.snowflakeToTime(sn)
+        snowtime = snowflakeToTime(sn)
         await ctx.reply(f"Snowflake timestamp: {snowtime}\n(<t:{snowtime}:F>)", mention_author=False)
     
     @commands.command(name="sha256", aliases=["hash"])
@@ -114,8 +113,7 @@ class UtilCommands(commands.Cog):
             return
 
         await ctx.reply(
-            file=discord.File(StringIO(msg.content),
-            filename=f"message_source_of_{msg.id}.txt"),
+            file=textFileAttachment(f"message_source_of_{msg.id}.txt", msg.content),
             mention_author=False
         )
     
@@ -124,7 +122,7 @@ class UtilCommands(commands.Cog):
         if isinstance(error, commands.MessageNotFound):
             await ctx.reply("Command failed - message not found.\nTry using a full URL link instead, or simply reply to the message.", mention_author=False)
         else:
-            await ctx.reply("Command failed. The bot most likely doesn't have access to that message.", mention_author=False)
+            await ctx.reply(f"Command failed.\n`{error.__class__.__name__}: {error}`", mention_author=False)
 
 
 

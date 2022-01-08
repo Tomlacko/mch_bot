@@ -9,10 +9,14 @@ class SimpleDB:
         self.filepath = path.join(abs_dir_path, name+".json")
     
     async def getData(self):
-        async with aiofiles.open(self.filepath, mode="r") as f:
-            contents = await f.read()
-        return json.loads(contents)
+        try:
+            async with aiofiles.open(self.filepath, mode="r") as f:
+                contents = await f.read()
+            return json.loads(contents)
+        except FileNotFoundError:
+            return {}
     
     async def saveData(self, data):
         async with aiofiles.open(self.filepath, mode="w") as f:
             await f.write(json.dumps(data))
+            await f.flush()

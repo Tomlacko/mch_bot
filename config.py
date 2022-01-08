@@ -6,9 +6,11 @@ bot_status_message = f"{bot_prefix} prefix"
 
 bot_owner_id = 263862604915539969 #Tomlacko | will query Application owners if set to None
 
+main_server_id = 720723932738486323 #Minecraft@Home
+
 muted_role_id = 721780279643209789
 
-
+alert_channel_id = 737298182912082072
 bot_logs_channel_id = 729090739702595596 #bot-logs
 send_message_on_startup = False
 send_message_on_quit = False #only works when quitting through the console, for which use_console needs to be enabled
@@ -26,11 +28,13 @@ cogs = {
     "new_accounts_alerts": True,
     "bottom_message": True,
     "muteme": True,
+    "givemod": True,
     "mojira_embeds": True,
     "fun_commands": True,
     "mathstuff": True,
     "modmail": True,
     "andrew_thing": True,
+    "antiraid": True,
 
     "debugging": False
 }

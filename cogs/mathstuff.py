@@ -20,7 +20,7 @@ class MathStuff(commands.Cog):
 
     @mathCommand.error
     async def mathCommandError(self, ctx: commands.Context, error: commands.CommandError):
-        await ctx.reply("Command failed.", mention_author=False)
+        await ctx.reply(f"Command failed.\n`{error.__class__.__name__}: {error}`", mention_author=False)
 
 
 
@@ -57,7 +57,7 @@ class MathStuff(commands.Cog):
         await ctx.reply(str(random.randint(start, stop)), mention_author=False)
     @randomInt.error
     async def randomIntError(self, ctx: commands.Context, error: commands.CommandError):
-        await ctx.reply(f"Command failed.\nUse `{self.bot.config.bot_prefix}randomint [minimum (default=0)] [maximum (default=1)]`.\nAlternatively, specifying only one argument will make it choose between it and 0.\n(Ranges are inclusive.)", mention_author=False)
+        await ctx.reply(f"Command failed.\n`{error.__class__.__name__}: {error}`\nUse `{self.bot.config.bot_prefix}randomint [minimum (default=0)] [maximum (default=1)]`.\nAlternatively, specifying only one argument will make it choose between it and 0.\n(Ranges are inclusive.)", mention_author=False)
     
     @commands.command(name="randomfloat")
     async def randomFloat(self, ctx: commands.Context, start: float = None, stop: float = None):
@@ -75,7 +75,7 @@ class MathStuff(commands.Cog):
         await ctx.reply(str(random.uniform(start, stop)), mention_author=False)
     @randomFloat.error
     async def randomFloatError(self, ctx: commands.Context, error: commands.CommandError):
-        await ctx.reply(f"Command failed.\nUse `{self.bot.config.bot_prefix}randomfloat [minimum (default=0)] [maximum (default=1)]`.\nAlternatively, specifying only one argument will make it choose between it and 0.\n(Ranges are inclusive.)", mention_author=False)
+        await ctx.reply(f"Command failed.\n`{error.__class__.__name__}: {error}`\nUse `{self.bot.config.bot_prefix}randomfloat [minimum (default=0)] [maximum (default=1)]`.\nAlternatively, specifying only one argument will make it choose between it and 0.\n(Ranges are inclusive.)", mention_author=False)
 
 
 
