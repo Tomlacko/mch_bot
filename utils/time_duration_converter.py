@@ -54,8 +54,7 @@ def getTimeDuration(val: str) -> timedelta:
     if not success:
         raise ValueError("Time duration format not recognized!")
     
-    currentDatetime = datetime.now()
+    currentDatetime = datetime.utcnow()
     futureDatetime = currentDatetime + relativedelta(years=duration["y"], months=duration["M"], weeks=duration["w"], days=duration["d"], hours=duration["h"], minutes=duration["m"], seconds=duration["s"])
-    
     #the adition and subtraction of currentDatetime doesn't cancel out, both are necessary
     return futureDatetime-currentDatetime

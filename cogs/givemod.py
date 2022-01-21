@@ -21,6 +21,9 @@ class GiveMod(commands.Cog):
         self.bot = bot
         self.db = SimpleDB(self.bot.globaldata["dbdir"], "givemod")
         self.loaded = False
+
+        if self.bot.is_loaded:
+            asyncio.create_task(self.on_ready())
     
     @commands.Cog.listener()
     async def on_ready(self):

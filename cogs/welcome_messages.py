@@ -16,7 +16,7 @@ class WelcomeMessages(commands.Cog):
         channel = self.bot.get_channel(welcome_channel)
 
         if not channel:
-            print("welcome channel not found")
+            print("Welcome channel not found!")
             return
         
         await channel.send(f"Member {member.mention} joined", allowed_mentions=discord.AllowedMentions(users=False))

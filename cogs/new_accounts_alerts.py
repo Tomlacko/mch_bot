@@ -19,16 +19,17 @@ class NewAccountsAlerts(commands.Cog):
         if member.bot:
             return
 
-        acc_age = commonutils.snowflakeToTime(member.id)
+        acc_timestamp = commonutils.snowflakeToTime(member.id)
+        acc_age = round(time()-acc_timestamp)
 
-        if time()-acc_age < threshold:
+        if acc_age < threshold:
             s = acc_age % 60
             m = (acc_age // 60) % 60
             h = (acc_age // 3600) % 24
             d = (acc_age // 86400) % 7
 
             alert_channel = self.bot.get_channel(self.bot.config.alert_channel_id)
-            await alert_channel.send(f"NEW USER: {member.mention} ({member.id}) was created in the last week! ({d}d {h}h {m}m {s}s ago)")#, allowed_mentions=discord.AllowedMentions.none()) #must ping, otherwise doesn't show usernames
+            await alert_channel.send(f"NEW USER: {member.mention} ({member.id}) was created in the last week, on <t:{acc_timestamp}:F> ({d}d {h}h {m}m {s}s ago).")#, allowed_mentions=discord.AllowedMentions.none()) #must ping, otherwise doesn't show usernames
         
 
 

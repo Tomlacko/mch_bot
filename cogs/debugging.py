@@ -11,6 +11,7 @@ class Debugging(commands.Cog):
         self.bot = bot
 
 
+
     @commands.command(name="test", hidden=True)
     @commands.is_owner()
     async def test(self, ctx: commands.Context):
@@ -31,10 +32,12 @@ class Debugging(commands.Cog):
         print(f"{error.__class__.__name__}: {error}")
         await ctx.message.add_reaction("❌")
     
+
     @commands.command(name="temp", hidden=True)
     @commands.is_owner()
     async def tempCommand(self, ctx: commands.Context):
         pass
+
 
 
 def setup(bot: commands.Bot):

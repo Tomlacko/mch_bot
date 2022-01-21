@@ -49,8 +49,14 @@ class BotConsole(commands.Cog):
             await self.help()
         elif commandName == "quit":
             await self.quit()
+        elif commandName == "coglist":
+            await self.list_cogs()
         elif commandName == "reload":
             await self.reload_cog(command.getRest())
+        elif commandName == "load":
+            await self.load_cog(command.getRest())
+        elif commandName == "unload":
+            await self.unload_cog(command.getRest())
         elif commandName == "setchannel":
             await self.set_channel(command.getRest())
         elif commandName == "post":
@@ -62,9 +68,12 @@ class BotConsole(commands.Cog):
         print("------")
         print("help = prints this message")
         print("quit = stops the bot")
+        print("coglist = lists all the loaded cogs")
         print("reload <cogname> = reloads a cog")
+        print("load <cogname> = loads a cog")
+        print("unload <cogname> = unloads a cog")
         print("setchannel <channel_id> = sets a given channel as active, useful for other commands")
-        print("post <message> = sends a message in a given channel")
+        print("post <message> = sends a message in the active channel")
         print("------")
     
 
@@ -78,16 +87,45 @@ class BotConsole(commands.Cog):
         try:
             self.bot.reload_extension(cogname)
         except commands.ExtensionNotLoaded as err:
-            print("Failed to load extension - extension is not loaded")
+            await self.load_cog(cogname)
+        except commands.ExtensionNotFound as err:
+            print("Failed to reload extension - extension not found")
+        except (commands.NoEntryPointError, commands.ExtensionFailed) as err:
+            print(f"Failed to reload extension - error while loading extension: {type(err)}\n{err}")
+        except BaseException as err:
+            print(f"Failed to reload extension - unexpected error: {type(err)}\n{err}")
+        else:
+            print("Extension reloaded succesfully.")
+    
+    async def load_cog(self, cogname: str):
+        try:
+            self.bot.load_extension(cogname)
+        except commands.ExtensionAlreadyLoaded as err:
+            await self.reload_cog(cogname)
         except commands.ExtensionNotFound as err:
             print("Failed to load extension - extension not found")
         except (commands.NoEntryPointError, commands.ExtensionFailed) as err:
             print(f"Failed to load extension - error while loading extension: {type(err)}\n{err}")
-        except BaseException as err:
+        except Exception as err:
             print(f"Failed to load extension - unexpected error: {type(err)}\n{err}")
         else:
-            print("Extension reloaded succesfully.")
+            print("Extension loaded succesfully.")
     
+    async def unload_cog(self, cogname: str):
+        try:
+            self.bot.unload_extension(cogname)
+        except commands.ExtensionNotLoaded as err:
+            print("Failed to unload extension - extension isn't loaded")
+        except commands.ExtensionNotFound as err:
+            print("Failed to unload extension - extension not found")
+        except Exception as err:
+            print(f"Failed to unload extension - unexpected error: {type(err)}\n{err}")
+        else:
+            print("Extension unloaded succesfully.")
+    
+    async def list_cogs(self):
+        print("These are all the currently loaded extensions:")
+        print(", ".join(self.bot.extensions.keys()))
 
     async def set_channel(self, channelID: str):
         try:

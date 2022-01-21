@@ -174,7 +174,8 @@ class MojiraEmbeds(commands.Cog):
                     await ctx.reply(f"Command failed:\nFailed to obtain issue data from <https://bugs.mojang.com/browse/{issueID}>", mention_author=False)
                 return
 
-            embed=discord.Embed(title=data["title"],
+            embed=discord.Embed(
+                title=data["title"],
                 url=f"https://bugs.mojang.com/browse/{data['id']}",
                 #description=data["description"],
                 color=panelcolors.get(data["resolution"], 0x000000)

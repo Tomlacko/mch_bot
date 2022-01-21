@@ -12,7 +12,7 @@ muted_role_id = 721780279643209789
 
 alert_channel_id = 737298182912082072
 bot_logs_channel_id = 729090739702595596 #bot-logs
-send_message_on_startup = False
+send_message_on_startup = True
 send_message_on_quit = False #only works when quitting through the console, for which use_console needs to be enabled
 
 use_jishaku = True
@@ -35,6 +35,7 @@ cogs = {
     "modmail": True,
     "andrew_thing": True,
     "antiraid": True,
+    "project_suggestions": True,
 
     "debugging": False
 }
@@ -49,3 +50,4 @@ permission_levels = {
     722845569403322369: 50, #PCA
     756990603945967639: 20, #Member
     766083300682498088: 10, #Project Contributor
+}

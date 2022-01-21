@@ -34,7 +34,11 @@ class BottomMessage(commands.Cog):
         self.bot = bot
         self.started = False
         self.message = None
+
         self.loaded = False
+
+        if self.bot.is_loaded:
+            asyncio.create_task(self.on_ready())
 
 
     @commands.Cog.listener()

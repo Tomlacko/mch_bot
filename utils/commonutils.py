@@ -1,5 +1,6 @@
 import discord
 from io import StringIO
+import traceback
 
 
 NEW_LINE = '\n' #used in f-strings, where backslashes don't work
@@ -20,6 +21,20 @@ def pluralSuffix(val: int) -> str:
         return "s"
     return ""
 
+def list_find(li, elem):
+    for i in range(len(li)):
+        if li[i] == elem:
+            return i
+    return -1
+
+def list_rfind(li, elem):
+    for i in reversed(range(len(li))):
+        if li[i] == elem:
+            return i
+    return -1
 
 def textFileAttachment(filename="attachment.txt", textContent="") -> discord.File:
     return discord.File(StringIO(textContent), filename=filename)
+
+def get_exception_traceback(ex: Exception) -> str:
+    return "".join(traceback.format_exception(type(ex), ex, ex.__traceback__))

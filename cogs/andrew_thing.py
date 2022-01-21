@@ -28,11 +28,11 @@ class AndrewThing(commands.Cog):
             return
         
         #cooldown to prevent triggering itself repeatedly
-        if self.last_triggered_when and self.last_triggered_when > when-timedelta(hours=1):
+        if self.last_triggered_when and self.last_triggered_when > when-timedelta(hours=4):
             return
 
         #reset progress if no further typing was done for a while
-        if self.last_typing_when and self.last_typing_when < when-timedelta(minutes=20):
+        if self.last_typing_when and self.last_typing_when < when-timedelta(minutes=15):
             self.typing_attempts = 0
             self.unsent_messages = 0
 
@@ -42,7 +42,7 @@ class AndrewThing(commands.Cog):
         self.typing_attempts+=1
 
         #do not wait for the typing to stop if it's been going on for a long time already
-        if self.typing_attempts < 5:
+        if self.typing_attempts < 8:
             #keep trying to wait and see when the typing stops
             if self.timer_task:
                 self.timer_task.cancel()
@@ -66,19 +66,19 @@ class AndrewThing(commands.Cog):
         #if this function triggers, andrew has stopped typing for a while
 
         self.typing_attempts = 0
-        self.unsent_messages+=1
+        self.unsent_messages += 1
 
         #don't trigger the first few times andrew stops tying
-        if self.unsent_messages < 3:
+        if self.unsent_messages < 4:
             return
         
         #the more andrew "does the thing", the higher the chance of triggering the message
-        if random.randint(1, self.unsent_messages) < 3:
+        if random.randint(1, self.unsent_messages) < 4:
             return
         
         #all checks passed, send the thing
         self.unsent_messages = 0
-        self.last_triggered_when = datetime.now()
+        self.last_triggered_when = datetime.utcnow()
         await self.last_channel.send("Uh oh.. Andrew is doing *the thing* again...")
 
 

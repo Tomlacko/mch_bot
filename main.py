@@ -7,6 +7,7 @@ from sys import stdin
 from datetime import datetime
 
 from utils.permissions import PermissionHelper
+from utils.commonutils import get_exception_traceback
 import config
 
 
@@ -43,8 +44,8 @@ bot.globaldata["status"] = {
     "cogs_disabled":0,
     "coglist":{}
 }
-bot.globaldata["cwd"] = path.dirname(__file__)
-bot.globaldata["dbdir"] = path.join(bot.globaldata["cwd"], bot.config.database_dir)
+bot.globaldata["botdir"] = path.dirname(__file__)
+bot.globaldata["dbdir"] = path.join(bot.globaldata["botdir"], bot.config.database_dir)
 
 
 def load_cogs(dir: str):
@@ -86,6 +87,7 @@ def load_cogs(dir: str):
             except Exception as e:
                 botdata["cogs_failed"] += 1
                 print(f"x Failed to load '{ext_name}'! Exception: {e}")
+                print(get_exception_traceback(e.original))
             else:
                 botdata["cogs_loaded"] += 1
                 success = True
@@ -103,7 +105,7 @@ def load_cogs(dir: str):
     print(f"Cog initializing done, loaded {botdata['cogs_loaded']}/{botdata['cogs_total']} cogs. ({botdata['cogs_failed']} failed, {botdata['cogs_disabled']} skipped)")
 
     if botdata["cogs_failed"] > 0:
-        if input("Some cogs failed to load. Load bot regardless? (y): ")!="y":
+        if input("\nSome cogs failed to load. Load bot regardless? (y): ")!="y":
             print("Quitting...")
             exit()
 

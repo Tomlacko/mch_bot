@@ -5,17 +5,17 @@ import asyncio
 from datetime import datetime
 from collections import deque
 
-from utils.commonutils import textFileAttachment
+from utils.commonutils import textFileAttachment, list_find
 from utils.simpledb import SimpleDB
 
 
 
 join_queue_length = 5 #the amount of users that have to join quickly after each other to triger the antiraid. (value must be 2 or more)
-time_spacing = 4 #seconds #if the spacing between each join is lower than this, then it is considered a raid
-raid_end_countdown = 20 #seconds #time that has to pass after the last join to assume that the raid has ended
+time_spacing = 5 #seconds #if the spacing between each join is lower than this, then it is considered a raid
+raid_end_countdown_time = 20 #seconds #time that has to pass after the last join to assume that the raid has ended
 
 raidBanMessage = "You have been banned on the Minecraft@Home Discord server for being part of a raid.\nIf this was an accident, appeal here: https://discord.gg/9DwrQpH"
-
+RAID_BAN_REASON = "raid"
 
 
 class Antiraid(commands.Cog):
@@ -24,8 +24,9 @@ class Antiraid(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.loaded = False
+        self.alert_channel = None #temporary until loaded
 
-        self.joins = deque()
+        self.joins = deque([], join_queue_length)
         self.all_joins = []
         self.raidersIDs = []
         self.bannedIDs = []
@@ -69,35 +70,33 @@ class Antiraid(commands.Cog):
         if member.bot:
             return
         
-        self.all_joins.append(member)
+        self.all_joins.append(member.id)
 
         #remember the new join
         self.joins.append((datetime.now(), member))
-        #forget the oldest join
-        #(basically "if", but using "while" to recover from unexpected cases)
-        while len(self.joins) > join_queue_length:
-            self.joins.popleft()
+        #oldest join is automatically discarded thanks to deque.maxlen
         
 
         #prolong end_raid timer
         if self.detected_raid_in_progress:
             if self.end_raid_timer_task:
                 self.end_raid_timer_task.cancel()
-            self.end_raid_timer_task = asyncio.create_task(self.countdown())
+            self.end_raid_timer_task = asyncio.create_task(self.raidEndCountdown())
         
         #handle joined member during a raid 
-        if self.antiraid:
-            await self.banRaider(member.id)
-        elif self.detected_raid_in_progress:
+        if self.detected_raid_in_progress:
             self.raidersIDs.append(member.id)
+        if self.antiraid:
+            await self.banAndLogRaider(member.id)
         
 
         #check if the joins in the queue look like a raid
         if not self.detected_raid_in_progress and len(self.joins) == join_queue_length:
-            allJoinsAreTooQuick = True #temporary
+            allJoinsAreTooQuick = True #temporary initial value
             previous = None
             first = True
             for (timestamp, member) in self.joins:
+                #if one of the joins has a large enough time difference, give up, since it's not a raid
                 if not first and (timestamp - previous[0]).total_seconds() > time_spacing:
                     allJoinsAreTooQuick = False
                     break
@@ -106,14 +105,21 @@ class Antiraid(commands.Cog):
             
             #raid detected
             if allJoinsAreTooQuick:
+                #remember the current joins, since the queue is gonna change during async execution
                 retroactive = list(self.joins)
+                self.raidersIDs = [u[1].id for u in retroactive]
+
+                was_antiraid = self.antiraid
                 await self.raidStartDetected()
-                for (_, raider) in retroactive:
-                    await self.banRaider(raider.id)
+
+                #retroactively ban initial raiders if antiraid got enabled
+                if not was_antiraid and self.antiraid:
+                    for (_, raider) in retroactive:
+                        await self.banAndLogRaider(raider.id)
     
 
-    async def countdown(self):
-        await asyncio.sleep(raid_end_countdown)
+    async def raidEndCountdown(self):
+        await asyncio.sleep(raid_end_countdown_time)
         await self.raidEndDetected()
 
 
@@ -134,9 +140,10 @@ class Antiraid(commands.Cog):
         msgText += "------------------------------------------"
         
         self.detected_raid_in_progress = True
+
         if self.autopilot:
             self.antiraid = True
-        self.end_raid_timer_task = asyncio.create_task(self.countdown())
+        self.end_raid_timer_task = asyncio.create_task(self.raidEndCountdown())
 
         await self.alert_channel.send(msgText)
     
@@ -154,58 +161,76 @@ class Antiraid(commands.Cog):
                 msgText += "✅ ..and **you already disabled antiraid**, so nobody new is getting banned.\n"
                 msgText += "*No further action is necessary now, unless another raid starts.*\n"
         msgText += "------------------------------------------"
+        msgText += f"{len(self.raidersIDs)} raiders detected in total:"
         
         self.detected_raid_in_progress = False
+
+        was_antiraid = self.antiraid
         if self.autopilot:
             self.antiraid = False
 
-        msg = await self.alert_channel.send(msgText)
+        msg = await self.alert_channel.send(
+            msgText,
+            file=textFileAttachment("detected_raiders.txt", "\n".join([str(id) for id in self.raidersIDs]))
+        )
+        self.raidersIDs = []
 
-        await self.sendResults(msg, not self.antiraid)
+        if was_antiraid and not self.antiraid:
+            await self.sendBanResults(msg)
 
 
-    async def banRaider(self, raiderID: int) -> bool:
-        self.raidersIDs.append(raiderID)
+    async def banAndLogRaider(self, raiderID: int, output_channel: discord.TextChannel = None) -> bool:
+        success = await self.banRaider(raiderID, self.alert_channel if output_channel is None else output_channel)
+        (self.bannedIDs if success else self.failedBanIDs).append(raiderID)
+        return success
 
-        success = True
+    async def banRaider(self, raiderID: int, output_channel: discord.TextChannel = None) -> bool:
+        """DMs every user before they get banned."""
+
+        if output_channel is None:
+            output_channel = self.alert_channel
+
+        success = False
+
+        #get user from id
         try:
-            user = await self.bot.fetch_user(raiderID)
+            raider = await self.bot.fetch_user(raiderID)
         except:
-            user = False
+            raider = False
         
-        if user:
+        if raider:
+            #DMing
             try:
                 if self.safemode:
-                    print(f"Antiraid: User <@{raiderID}> has been sent ban message: {raidBanMessage}")
+                    print(f"Antiraid safemode: User <@{raiderID}> would've been sent a ban message: {raidBanMessage}")
                 else:
-                    await user.send(raidBanMessage)
+                    await raider.send(raidBanMessage)
                 await asyncio.sleep(1)
             except:
-                await self.alert_channel.send(f"Antiraid: failed to DM <@{raiderID}> while banning.")
+                await output_channel.send(f"Failed to DM <@{raiderID}> while banning.")
             
+            #Banning
             try:
                 if self.safemode:
-                    print(f"Antiraid: User <@{raiderID}> would be banned.")
+                    print(f"Antiraid safemode: User <@{raiderID}> would be banned.")
                 else:
-                    await self.bot.main_guild.ban(user, reason="raid", delete_message_days=0)
-                self.bannedIDs.append(raiderID)
+                    await self.bot.main_guild.ban(raider, reason=RAID_BAN_REASON, delete_message_days=0)
+                success = True
             except:
-                self.failedBanIDs.append(raiderID)
-                await self.alert_channel.send(f"Antiraid: failed to ban <@{raiderID}>")
-                success = False
+                await output_channel.send(f"Failed to ban <@{raiderID}>.")
+        #user not found
         else:
-            self.failedBanIDs.append(raiderID)
-            await self.alert_channel.send(f"Antiraid: failed to ban <@{raiderID}>, user not found!")
-            success = False
+            await output_channel.send(f"Failed to ban <@{raiderID}> - user not found!")
 
         return success
 
 
-    async def sendResults(self, replyMsg: discord.Message, resetData: bool = False):
-        if len(self.bannedIDs) > 0 or len(self.failedBanIDs) > 0:
+    async def sendBanResults(self, replyMsg: discord.Message):
+        total = len(self.bannedIDs) + len(self.failedBanIDs)
+        if total > 0:
             await replyMsg.reply(
+                f"__Antiraid results:__\n{len(self.bannedIDs)}/{total} users successfully banned.",
                 files=[
-                    textFileAttachment("detected_raiders.txt", "\n".join([str(id) for id in self.raidersIDs])),
                     textFileAttachment("banned_users.txt", "\n".join([str(id) for id in self.bannedIDs])),
                     textFileAttachment("failed_to_ban.txt", "\n".join([str(id) for id in self.failedBanIDs]))
                 ],
@@ -213,14 +238,12 @@ class Antiraid(commands.Cog):
             )
         else:
             await replyMsg.reply(
-                file=textFileAttachment("detected_raiders.txt", "\n".join([str(id) for id in self.raidersIDs])),
+                "__Antiraid results:__\nNo users were banned.",
                 mention_author=False
             )
         
-        if resetData:
-            self.raidersIDs = []
-            self.bannedIDs = []
-            self.failedBanIDs = []
+        self.bannedIDs = []
+        self.failedBanIDs = []
 
 
     @commands.command(name="antiraid")
@@ -250,7 +273,7 @@ class Antiraid(commands.Cog):
             else:
                 self.antiraid = False
                 msg = await self.alert_channel.send("------------------------------------------\nAntiraid has been manually disabled!\n------------------------------------------")
-                await self.sendResults(msg, True)
+                await self.sendBanResults(msg)
                 await ctx.reply("**Antiraid has been disabled!**\nNewly joined users will no longer get banned.", mention_author=False)
             return
         
@@ -285,7 +308,7 @@ class Antiraid(commands.Cog):
                 msgText = "**Antiraid autopilot has been enabled!**\n"
                 if self.detected_raid_in_progress:
                     if self.antiraid:
-                        msgText += "The active antiraid (banning) will be automatically disabled when the raid stops."
+                        msgText += "The currently active antiraid (banning) will be automatically disabled when the raid stops."
                     else:
                         self.antiraid = True
                         await self.alert_channel.send("------------------------------------------\nAntiraid has been automatically enabled!\n------------------------------------------")
@@ -293,7 +316,8 @@ class Antiraid(commands.Cog):
                 else:
                     if self.antiraid:
                         self.antiraid = False
-                        await self.alert_channel.send("------------------------------------------\nAntiraid has been automatically disabled!\n------------------------------------------")
+                        msg = await self.alert_channel.send("------------------------------------------\nAntiraid has been automatically disabled!\n------------------------------------------")
+                        await self.sendBanResults(msg)
                         msgText += "Antiraid (banning) has been automatically disabled, since no raid is currently happening."
                     else:
                         msgText += "Antiraid (banning) will be automatically enabled when a raid starts."
@@ -365,41 +389,77 @@ class Antiraid(commands.Cog):
     async def banJoinRange(self, ctx: commands.Context, oldestUser: discord.User, newestUser: discord.User):
         """Bans all recently joined users in the given range."""
         
-        if not self.bot.permhelper.isUserAbove(ctx.author, 150):
-            await ctx.reply("You do not have permission to run this command! (Required level = 150)", mention_author=False)
+        if not self.bot.permhelper.isUserAbove(ctx.author, 100):
+            await ctx.reply("You do not have permission to run this command! (Required level = 100)", mention_author=False)
             return
         
         firstID = oldestUser.id
         lastID = newestUser.id
 
-        if firstID not in self.all_joins or lastID not in self.all_joins:
-            await ctx.reply("Command failed - the specified range was not found in the join list.", mention_author=False)
-            return
+        first_index = list_find(self.all_joins, firstID)
         
+        if first_index == -1:
+            await ctx.reply("Command failed - the specified range was not found in the join list (initial user not found).", mention_author=False)
+            return
+
+        list_to_ban = self.all_joins[first_index:] #intentionally keeping a copy, since the list could change due to async execution
+        
+        if list_find(list_to_ban, lastID) == -1:
+            await ctx.reply("Command failed - the specified range was not found in the join list (last user not found anywhere after first user).", mention_author=False)
+            return
+
+
         await ctx.reply("Banning...", mention_author=False)
 
-        self.raidersIDs = []
-        self.bannedIDs = []
-        self.failedBanIDs = []
+        bannedIDs = []
+        failedBanIDs = []
 
-        inRange = False
-        for userID in reversed(self.all_joins):
-            if not inRange and userID==firstID:
-                inRange = True
+        #ban all in the range
+        for userID in list_to_ban:
+            (bannedIDs if await self.banRaider(userID, ctx.channel) else failedBanIDs).append(userID)
 
-            if inRange:
-                await self.banRaider(userID)
-            
-            if inRange and userID==lastID:
+            if userID == lastID:
                 break
         
-        msg = await ctx.reply(f"**Banning finished!** {len(self.bannedIDs)}/{len(self.raidersIDs)} users banned.", mention_author=True)
-        await sendResults(msg, True)
+        total = len(bannedIDs) + len(failedBanIDs)
+        if total > 0:
+            await ctx.reply(
+                f"**Banning finished!**\n{len(bannedIDs)}/{total} users successfully banned.",
+                files=[
+                    textFileAttachment("banned_users.txt", "\n".join([str(id) for id in bannedIDs])),
+                    textFileAttachment("failed_to_ban.txt", "\n".join([str(id) for id in failedBanIDs]))
+                ],
+                mention_author=True
+            )
 
     @banJoinRange.error
     async def banJoinRangeError(self, ctx: commands.Context, error: commands.CommandError):
         if isinstance(error, commands.BadArgument) or isinstance(error, commands.MissingRequiredArgument) or isinstance(error, commands.ConversionError):
             await ctx.reply(f"Command failed - invalid syntax.\nUse `{self.bot.config.bot_prefix}banJoinRange <firstUser> <lastUser>`.", mention_author=False)
+        else:
+            await ctx.reply(f"Command failed.\n`{error.__class__.__name__}: {error}`", mention_author=False)
+
+
+    @commands.command(name="joinlist")
+    async def joinlistCmd(self, ctx: commands.Context, limit: int = 0):
+        """Sends a list of all the recently joined user IDs in reverse-chronological order."""
+
+        if not self.bot.permhelper.isUserAbove(ctx.author, 100):
+            await ctx.reply("You do not have permission to run this command! (Required level = 100)", mention_author=False)
+            return
+        
+        if limit<=0 or limit>=len(self.all_joins):
+            limit = len(self.all_joins)
+            msgText = f"Here's the full list of newly joined users I have in memory: ({limit} in total, oldest to newest)"
+        else:
+            msgText = f"Here's a list of the last {limit}/{len(self.all_joins)} newly joined users I have in memory: (oldest to newest)"
+        
+        await ctx.reply(msgText, file=textFileAttachment("new_joins.txt", "\n".join([str(id) for id in self.all_joins[len(self.all_joins)-limit:]])), mention_author=False)
+
+    @joinlistCmd.error
+    async def joinlistCmdError(self, ctx: commands.Context, error: commands.CommandError):
+        if isinstance(error, commands.BadArgument) or isinstance(error, commands.MissingRequiredArgument) or isinstance(error, commands.ConversionError):
+            await ctx.reply(f"Command failed - invalid syntax.\nUse `{self.bot.config.bot_prefix}joinlist [limit]`.", mention_author=False)
         else:
             await ctx.reply(f"Command failed.\n`{error.__class__.__name__}: {error}`", mention_author=False)
 

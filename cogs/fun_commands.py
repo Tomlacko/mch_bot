@@ -4,6 +4,7 @@ from discord.ext import commands
 import asyncio
 from hashlib import sha256
 import re
+from os import path
 
 
 stripAlphaNumRegex = re.compile(r"[^a-z0-9 ]")
@@ -53,6 +54,12 @@ class FunCommands(commands.Cog):
             result = sha256(preprocessed).digest()[0]
             answer = options[result % len(options)]
             await ctx.reply(f"{answer}.", mention_author=False)
+    
+
+    @commands.command(name="comedy")
+    async def comedy(self, ctx: commands.Context):
+        """Makes a poor attempt at being funny."""
+        await ctx.reply(file=discord.File(path.join(self.bot.globaldata["botdir"], "resources/comedy.mp3")), mention_author=False)
 
 
 def setup(bot: commands.Bot):

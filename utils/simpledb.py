@@ -5,8 +5,8 @@ from os import path
 
 
 class SimpleDB:
-    def __init__(self, abs_dir_path, name):
-        self.filepath = path.join(abs_dir_path, name+".json")
+    def __init__(self, abs_dbdir_path, name):
+        self.filepath = path.join(abs_dbdir_path, name+".json")
     
     async def getData(self):
         try:
