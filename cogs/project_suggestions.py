@@ -46,7 +46,11 @@ class ProjectSuggestions(commands.Cog):
 
         #apply reactions to any new suggestion
         for emoji in ["⭐", "downvote:933906083339177995", "🔁", "⏯️", "done:739037536696926239", "🔎", "❓", "⚙️", "💩", "❌", "🚫", "🗑️", "✅"]:
-            await msg.add_reaction(emoji)
+            try:
+                #can fail if message gets suddenly deleted
+                await msg.add_reaction(emoji)
+            except:
+                pass
             if msg.id in self.currently_processed_suggestions or msg.id in self.recently_deleted_suggestions:
                 break
 
@@ -108,8 +112,13 @@ class ProjectSuggestions(commands.Cog):
         if reaction == "✅":
             #remove all action-related reactions
             for emoji in reversed(special_reactions):
-                await msg.clear_reaction(emoji)
-
+                try:
+                    #can fail if message gets suddenly deleted
+                    await msg.clear_reaction(emoji)
+                except:
+                    pass
+                if msg.id in self.recently_deleted_suggestions:
+                    break
             try:
                 #throws exceptions if not found
                 self.currently_processed_suggestions.remove(msg.id)
